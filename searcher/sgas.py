@@ -21,11 +21,11 @@ def normalize(v):
 
     return normalized_v
 
-
+# SGAS 类用于使用 SGAS 算法执行搜索过程。 它接受多个参数，包括要搜索的模型、架构队列、参数队列、损失函数、度量函数和优化器。
 class SGAS: 
 
     def __init__(self, args_dict): 
-        self.max_nb_edges = 2
+        self.max_nb_edges = 2  # 每条边只保留两个最可能的操作
         self.args         = args_dict['args']
         self.model_search = args_dict['model_search']
         self.arch_queue   = args_dict['arch_queue']
@@ -33,13 +33,13 @@ class SGAS:
         self.loss_fn      = args_dict['loss_fn']
         self.metric       = args_dict['metric']
         self.optimizer    = args_dict['optimizer']
-        self.architect    = Architect(self.model_search, self.args)
+        self.architect    = Architect(self.model_search, self.args)   # ？
         # self.init_sgas_paras()
         self.console   = Console()
         self.cell_id   = 0
         self.arch_topo = self.model_search.arch_topo
         
-
+    # 通过迭代训练数据并优化结构参数和模型参数来执行搜索过程。 它还调用edge_decision方法来对模型架构的边缘做出决策。
     def search(self, args_dict):
 
         lr = args_dict['lr']
@@ -90,7 +90,7 @@ class SGAS:
         return {'loss'   : epoch_loss / (i_step + 1), 
                 'metric' : epoch_metric / (i_step + 1)}
 
-
+    # edge_decision 方法负责在模型架构的边缘上做出决策。 它迭代单元拓扑，并且对于每种类型的边（V 或 E），计算每条边的重要性和熵分数，并选择分数最高的边。 然后，它更新架构参数中选定的边，并将其 require_grad 属性设置为 False。
     def edge_decision(self, epoch, show = False): 
         
         if self.cell_id >= self.args.basic.nb_layers:
@@ -107,6 +107,7 @@ class SGAS:
         for type in ['V', 'E']: 
             
             if show:
+                print("更新图二选一")
                 self.console.log(f"[red]Type => {type}")
 
             type_topo = cell_topo[type]
@@ -115,12 +116,14 @@ class SGAS:
             for Si, incomings in type_topo.items():
 
                 if show: 
+                    # print("每个cell顶点对应入边的选择过程")
                     self.console.log(f'Node => {Si}, incoming edges: ')
                     for edge in incomings:
                         Vj, Ek, order = edge['Vj'], edge['Ek'], edge['weight_order']
                         grad = arch_para[order].requires_grad
                         para = list(arch_para[order].detach().softmax(0).cpu().numpy())
                         para = [f"{x:.4f}" for x in para]
+                        
                         self.console.log(f"Vj: {Vj}, Ek: {Ek}, arch: {para}, order: {order}, grad: {grad}")
 
                 for id, edge in enumerate(incomings):
@@ -156,7 +159,7 @@ class SGAS:
 
         return self.cell_id < self.args.basic.nb_layers
 
-
+    # check_edges 方法检查是否已选择单元拓扑中的所有边。 如果所有边都已被选择，则将剩余未选择边的 selected 属性设置为 0，并将其 require_grad 属性设置为 False。
     def check_edges(self, type_topo, arch_para):
         for Si, incomings in type_topo.items():
             num_selected_edges = 0
@@ -178,16 +181,21 @@ class SGAS:
     
         return True
 
-
+    # 基因型方法根据所选边缘生成模型架构的基因型。 
+    # 它迭代单元拓扑，并且对于每种类型的边，它将选定的边附加到结果列表中。 然后它返回基因型列表。
     def genotypes(self, show = True):
         genotypes = []
         arch_topo = self.arch_topo
         arch_para = self.model_search.arch_para
         arch_para = [alpha.softmax(0) for alpha in arch_para]
+        # print("..........")
+        # print(len(arch_topo))
+        # print("..........")
 
         for i, cell_topo in enumerate(arch_topo):
 
             if show:
+                print("cell数量对应索引")
                 self.console.log(f"[red]Cell => {i}")
 
             result = {}

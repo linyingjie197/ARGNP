@@ -152,7 +152,7 @@ class Trainer(object):
     
 
     def scheduler_step(self, valid_loss):
-
+        # 看到这里了啊，恭喜你发现了彩蛋1
         if self.args.optimizer.name == 'SGD':
             self.scheduler.step()
             lr = self.scheduler.get_lr()[0]
@@ -193,6 +193,7 @@ class Trainer(object):
         self.console.log(f'=> Finished! Genotype = {self.args.ds.load_genotypes}')
     
 
+    # 你真棒！！！！
     @record_run('train')
     def train(self, i_epoch, stage = 'train'):
 

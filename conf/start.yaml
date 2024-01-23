@@ -1,7 +1,8 @@
-gpu: 7
-data: sbms_cluster
+gpu: 0
+# data: sbms_cluster
+data: ZINC
 start_node: 2
 repeats: 4
-save: 'archs2/start'
+save: 'archs/start'
 warmup_dec_epoch: 10
 decision_freq: 5

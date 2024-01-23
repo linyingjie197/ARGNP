@@ -18,6 +18,7 @@ import numpy as np
 # [<split>.pickle and <split>.index; for split 'train', 'val' and 'test']
 
 
+#读取数据
 class MoleculeDGL(torch.utils.data.Dataset):
     def __init__(self, data_dir, split, num_graphs=None):
         self.data_dir = data_dir

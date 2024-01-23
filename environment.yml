@@ -1,4 +1,4 @@
-name: gnas
+name: ARGNP
 channels:
   - conda-forge
   - defaults

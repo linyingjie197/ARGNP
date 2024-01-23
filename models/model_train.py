@@ -26,6 +26,7 @@ class Model_Train(nn.Module):
 
     
     def forward(self, input):
+        # 正向传播
         input = self.trans_input(input)
         G, V, E = input['G'], input['V'], input['E']
         if self.args.ds.pos_encode > 0:

@@ -6,7 +6,7 @@ import numpy as np
 from models.networks import MLP
 from utils.visualize import *
 
-
+#定义候选操作
 OPS = {
     'V_None' : lambda args: V_None(args),
     'V_I'    : lambda args: V_I(args),
@@ -32,7 +32,7 @@ OPS = {
     # 'E_FiLM' : lambda args: E_FiLM(args),
 }
 
-
+#划分两个搜索空间中的候选操作
 V_OPS = ['V_None', 'V_I', 'V_Mean', 'V_Sum', 'V_Max', 'V_Std', 'V_Gem2', 'V_Gem3']
 E_OPS = ['E_None', 'E_I', 'E_Sub', 'E_Gauss', 'E_Max', 'E_Sum', 'E_Mean', 'E_Had']
 
