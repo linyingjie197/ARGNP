@@ -12,8 +12,10 @@ Genotype = namedtuple('Genotype', 'V E')
 class DARTS:
 
     def __init__(self, args_dict): 
-        self.max_nb_edges  = 2
-        self.args          = args_dict['args']
+        self.max_nb_edges  = 2     # 最多边为2条
+
+        # 通过DARTS初始化获取对应配置参数 
+        self.args          = args_dict['args'] 
         self.model_search  = args_dict['model_search']
         self.arch_queue    = args_dict['arch_queue']
         self.para_queue    = args_dict['para_queue']
