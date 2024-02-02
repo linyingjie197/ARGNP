@@ -126,6 +126,11 @@ def normalize_pointcloud(pointcloud):
 def load_data(partition, name = 'modelnet10'):
     all_data = []
     all_label = []
+    # print("<<<<<<<<<<<<<<<")
+    # print(os.path.join(get_original_cwd(), "data/modelnet/", name, '*%s*.h5'%partition))
+    # print(">>>>>>>>>>>>>>>")
+
+
     for h5_name in glob.glob(os.path.join(get_original_cwd(), "data/modelnet/data", name, '*%s*.h5'%partition)):
         with h5py.File(os.path.join(get_original_cwd(), h5_name), 'r') as f:
             data = f['data'][:].astype('float32')
