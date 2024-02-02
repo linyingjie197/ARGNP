@@ -16,6 +16,7 @@ from hydra.utils import get_original_cwd, to_absolute_path
 Genotype = namedtuple('Genotype', 'V E')
 
 # 确定动态拓扑结构、各个状态顶点间的权重配置。
+# 这是一个新的注释
 def expand_genotype(src_genotypes):
     
     nb_layers = len(src_genotypes)
