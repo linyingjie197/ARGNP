@@ -166,6 +166,13 @@ class Model_Search(nn.Module):
         self.trans_output   = TransOutput(args)# 通过初始化这些对象，可以在类的其他方法中使用它们来转换输入和输出数据，以便符合模型的要求或进行预处理操作。
         # 满足if语句，便创建一个线性层，用于对输入数据进行位置编码。
         # 位置编码是一种在序列数据中引入位置信息的技术，常用于自然语言处理任务或序列建模任务
+        
+        #new here 
+        # self.num_edges  = 3
+        # search_space     = 9
+        # self._arch_parameters = nn.Parameter(1e-3*torch.randn(self.num_edges, search_space) )
+
+
         if args.ds.pos_encode > 0:
             self.position_encoding = nn.Linear(args.ds.pos_encode, args.ds.node_dim)
 
@@ -200,7 +207,6 @@ class Model_Search(nn.Module):
 
     # 初始化架构参数
     def init_arch_para(self, para):
-        
         arch_para = []  # 用于存储初始化后的拓扑结构参数
         # `para`参数是一个列表，其中包含了每个拓扑结构参数的长度。len(ops)
         for plen in para:
@@ -208,7 +214,10 @@ class Model_Search(nn.Module):
             # 2 将生成的随机张量乘以 1e-3，以缩小其范围。
             # 3 使用 `Variable` 函数将随机张量转换为可求导（requires_grad = True）的张量，并将其存储在 GPU 上 
             arch_para.append(Variable(1e-3 * torch.rand(plen).cuda(), requires_grad = True))
+        # return arch_para
         return arch_para
+     
+        
     
         # total = len(para)
         # arch_para = []
@@ -247,7 +256,9 @@ class Model_Search(nn.Module):
 
     # arch_parameters 方法用于获取模型的架构参数
     def arch_parameters(self):
+        print("arch args = ",self.arch_para)
         return self.arch_para
+            
 
     # 属于某个类中的成员函数
     def _loss(self, input, targets):

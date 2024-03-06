@@ -39,11 +39,15 @@ class SGAS:
         self.cell_id   = 0
         self.arch_topo = self.model_search.arch_topo
         
+        
     # 通过迭代训练数据并优化结构参数和模型参数来执行搜索过程。 它还调用edge_decision方法来对模型架构的边缘做出决策。
     def search(self, args_dict):
 
         lr = args_dict['lr']
-
+        
+        #new here
+        epoch = args_dict['epoch']
+        
         self.model_search.train()
         epoch_loss   = 0
         epoch_metric = 0
@@ -69,6 +73,8 @@ class SGAS:
                     target_valid      = batch_targets_search,
                     eta               = lr,
                     network_optimizer = self.optimizer,
+                    #new here
+                    epoch             = epoch,
                     unrolled          = self.args.optimizer.unrolled
                 )
                 #! 4. 优化模型参数

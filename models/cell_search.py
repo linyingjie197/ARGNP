@@ -6,32 +6,32 @@ from torch.autograd import Variable
 from models.operations import get_package, get_OPS, OPS
 from models.networks import MLP
 
-# 神经网络模块，通过加权求和的方式组合多个候选操作。权重确定每个操作对最终输出的贡献。如果选择了特定的操作，只会将该操作应用于输入。
+#用于实现图神经网络中的混合操作和单元格结构
+
+# 混合操作，通过加权求和的方式组合多个候选操作。权重确定每个操作对最终输出的贡献。如果选择了特定的操作，只会将该操作应用于输入。
 class Mixed(nn.Module):
-    
+    # 初始化了一个候选操作的集合candidates，这个集合是一个nn.ModuleDict对象，其中的元素是各种不同的操作的实例。
     def __init__(self, args, type):
         super().__init__()
         self.args       = args
         self.type       = type
-        self._ops       = get_OPS(type)  #返回一个操作名称的列表 
+        self._ops       = get_OPS(type)  # 返回一个操作名称的列表 
         self.candidates = nn.ModuleDict({
             name: get_package(type)(args, OPS[name](args), name, affine = False)
             # name: get_package('v')(args, OPS['V_Max'](args), name, affine = False)
             for name in self._ops
         })   #用于存储候选操作的实例
-             #通过字典推导式，它遍历`_ops`中的操作名称。对于每个操作名称，它使用`get_package`函数和相应的参数进行实例化，`get_package`函数使用`type`参数返回相应的包，并使用`OPS[name](args)`，`name`和`affine=False`作为参数来初始化操作。
-    #前向传播，在已经确定的操作中更新w（归一化+被选中的操作进行执行），相加得到所有候选操作的加权输出之和
+
+    # 根据输入的权重和选定的操作索引，它要么计算所有候选操作的加权输出之和，要么直接将选定的操作应用于输入。
     def forward(self, input: tuple, weight: dict, selected_idx: int = None):
-        # 通过迭代`_ops`中的操作，将相应权重乘以操作应用于`input`的输出，并将它们相加，得到所有候选操作的加权输出之和。
+        # print(input)
         if selected_idx is None or selected_idx == -1:
-            weight = weight.softmax(0)  # 对变量 weight 进行 softmax 归一化
-            return sum( weight[i] * self.candidates[name](input) for i, name in enumerate(self._ops) )
-        # 直接将选定的操作应用于`input`。它使用`selected_idx`从`_ops`中查找选定的操作，并从`candidates`字典中获取相应的操作。然后，它将选定的操作应用于`input`并返回结果。
+            weight = weight.softmax(0)  
+            return sum( weight[i] * self.candidates[name](input) for i, name in enumerate(self._ops) )         #当所有被选操作均已索引完，计算该组合的加权求和值（其中权值已做归一化处理）
         else:
             selected_op = self._ops[selected_idx]
             return self.candidates[selected_op](input)
-            # candidates字典   返回操作名称（如V-Max）的对应公式结果
-        #当所有被选操作均已索引完，计算该组合的加权求和值（其中权值已做归一化处理）
+ 
 
 
 # if __name__ == "__main__":
@@ -50,7 +50,8 @@ class Mixed(nn.Module):
 
 
 
-# 加权求和，激活，拼接、归一化等转换得到最终输出值，以此类推，对cell中每个状态顶点进行更新
+# 单元格结构
+# 根据给定的单元格结构和输入，计算单元格的输出
 class Cell(nn.Module):
 
     # 获取每个cell中的cell结构字典、cell的状态顶点数量、处理顶点特征和边特征输入和输出的转换操作、激活函数、架构加载函数load_arch
@@ -95,7 +96,7 @@ class Cell(nn.Module):
             # 将`link_para`字典作为`nn.ModuleDict`对象的属性添加到`self`中，属性名称是根据类型动态生成的。
             setattr(self, f'link_para_{type}', nn.ModuleDict(link_para))  
 
-
+    # 首先根据输入的图、架构参数和单元格拓扑结构信息，计算出每个状态节点的加权和值，然后通过一系列的激活、拼接、转换等操作，得到最终的输出值。
     def forward(self, input):
 
        # 以下几个由input字典导入的键值均为固定数值
@@ -107,7 +108,7 @@ class Cell(nn.Module):
             'V': [V0, V1], 
             'E': [E0, E1],
         }   # 初始化两个更新图cell的加权和值
-        #V0、V1应该是数值而不是变量，在这两个键中对应两个列表值，后续在某个键中添加的值将被纳入该列表内，列表中的每个个值代表cell中每个状态顶点的加权求和值）
+        # V0、V1应该是数值而不是变量，在这两个键中对应两个列表值，后续在某个键中添加的值将被纳入该列表内，列表中的每个值代表cell中每个状态顶点的加权求和值）
  
         # 根据入边的各个信息，调用不同的函数来更新状态变量states中的元素。
         # 循环遍历cell中的各个状态顶点Si（不包括两个输入），并遍历各状态顶点的对应的入边，对每个输入边进行处理，并将处理结果存储在states中的相应位置。

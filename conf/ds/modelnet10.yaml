@@ -3,9 +3,10 @@ data: modelnet10
 in_dim_V: 3
 in_dim_E: 9
 nb_classes: 10
-batch: 16
-node_dim: 64
-edge_dim: 32
+batch: 4
+# batch: 16
+node_dim: 32 # 64
+edge_dim: 16 # 32
 # node_dim: 128
 # edge_dim: 32
 inter_channel_V: 256
@@ -22,3 +23,5 @@ load_genotypes: './archs/expand/expand1.txt'
 
 expand_from: ""
 arch_save: './archs/expand'
+
+
