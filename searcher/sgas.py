@@ -142,6 +142,8 @@ class SGAS:
 
             importance = torch.sum(mat[:, 1:], dim = -1)
             probs = mat[:, 1:] / importance[:, None]
+            
+
             entropy = cate.Categorical(probs=probs).entropy() / math.log(probs.size()[1])
             score = normalize(importance) * normalize(1 - entropy)
 

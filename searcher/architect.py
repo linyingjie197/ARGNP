@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import torch.nn as nn
 from torch.autograd import Variable
+import torch.nn.functional as F
 
 # 一个用于在 PyTorch 中连接多个张量的函数。
 def _concat(xs): 
@@ -64,11 +65,11 @@ class Architect(object):
     # 用于在标准训练过程中执行反向传播步骤
     def _backward_step(self, input_valid, target_valid, epoch): 
         #here new
-        weights = 0 + 50*epoch/100
+        # weights = 0 + 50*epoch/100
         # print(f"打印model的内部方法：{dir(self.model.arch_parameters)}")
-        ssr_normal = self.mlc_loss(self.model._arch_parameters)
-        loss = self.model._loss(input_valid, target_valid)+ weights*ssr_normal
-        # loss = self.model._loss(input_valid, target_valid)
+        # ssr_normal = self.mlc_loss(self.model.arch_parameters())
+        # loss = self.model._loss(input_valid, target_valid) + weights*ssr_normal
+        loss = self.model._loss(input_valid, target_valid)
         loss.backward()
 
     # 用于在unrolled模型上执行反向传播步骤
@@ -133,12 +134,21 @@ class Architect(object):
         return [(x-y).div_(2*R) for x, y in zip(grads_p, grads_n)]  #计算梯度差异，并将其除以两倍的缩放因子 2*R。返回的是一个梯度差异的列表，每个元素对应一个架构参数的梯度差异。
 
 
-#here new
-    def mlc_loss(self, arch_param):
-        y_pred_neg = arch_param
-        neg_loss = torch.logsumexp(y_pred_neg, dim=-1)
-        aux_loss = torch.mean(neg_loss)
-        return aux_loss
+# #here new
+#     def mlc_loss(self, arch_param):
+
+#         # 1. 长度统一
+#         max_length = max(t.size(0) for t in arch_param)
+#         padded_tensors = [F.pad(t, (0, max_length - t.size(0))) for t in arch_param]
+
+#         # 2. 拼接张量
+#         y_pred_neg = torch.stack(padded_tensors)
+
+#         neg_loss = torch.logsumexp(y_pred_neg, dim=0)
+#         aux_loss = torch.mean(neg_loss)
+#         # print(f"nef loss = {neg_loss}")
+#         return aux_loss
+        
     # def mlc_loss(self, arch_param):
     #     y_pred_neg = arch_param
     #     neg_loss = torch.log(torch.exp(y_pred_neg))

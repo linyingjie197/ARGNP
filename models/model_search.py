@@ -209,6 +209,8 @@ class Model_Search(nn.Module):
     def init_arch_para(self, para):
         arch_para = []  # 用于存储初始化后的拓扑结构参数
         # `para`参数是一个列表，其中包含了每个拓扑结构参数的长度。len(ops)
+        # print(f"para = {para}")
+        # para = [8, 8, 8, 8, 8, 9, 9, 9, 9, 9]
         for plen in para:
             # 1 创建一个长度为 `plen` 的张量，并使用 `torch.rand(plen)` 生成一个取值范围在 0 到 1 之间的随机张量。
             # 2 将生成的随机张量乘以 1e-3，以缩小其范围。
@@ -256,7 +258,7 @@ class Model_Search(nn.Module):
 
     # arch_parameters 方法用于获取模型的架构参数
     def arch_parameters(self):
-        print("arch args = ",self.arch_para)
+        # print("arch args = ",self.arch_para)
         return self.arch_para
             
 

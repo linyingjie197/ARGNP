@@ -2,6 +2,7 @@ archs/
 archs2/
 mol/
 mol10/
+*.pdf
 *.pkl
 *.out
 ModelNet10

@@ -29,7 +29,7 @@ OPS = {
     'E_Had'  : lambda args: E_Had(args),
     'E_Src'  : lambda args: E_Src(args),
     'E_Dst'  : lambda args: E_Dst(args),
-    'E_Cat'  : lambda args: E_Cat(args),
+    # 'E_Cat'  : lambda args: E_Cat(args),
     # 'E_GRU'  : lambda args: E_GRU(args),
     # 'E_FiLM' : lambda args: E_FiLM(args),
     # 'E_NEW' : lambda args:  New(args),
@@ -38,8 +38,8 @@ OPS = {
 #划分两个搜索空间中的候选操作
 V_OPS = ['V_None', 'V_I', 'V_Mean', 'V_Sum', 'V_Max', 'V_Std', 'V_Gem2', 'V_Gem3']
 # E_OPS = ['E_None', 'E_I', 'E_Sub', 'E_Gauss', 'E_Max', 'E_Sum', 'E_Mean', 'E_Had','E_Cat','E_GRU' ,'E_FiLM','E_NEW']
-E_OPS = ['E_None', 'E_I', 'E_Sub', 'E_Gauss', 'E_Max', 'E_Sum', 'E_Mean', 'E_Had','E_Cat']
-# E_OPS = ['E_None', 'E_I', 'E_Sub', 'E_Gauss', 'E_Max', 'E_Sum', 'E_Mean', 'E_Had']
+# E_OPS = ['E_None', 'E_I', 'E_Sub', 'E_Gauss', 'E_Max', 'E_Sum', 'E_Mean', 'E_Had','E_Cat']
+E_OPS = ['E_None', 'E_I', 'E_Sub', 'E_Gauss', 'E_Max', 'E_Sum', 'E_Mean', 'E_Had']
 
 
 

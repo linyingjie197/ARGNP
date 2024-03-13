@@ -167,7 +167,8 @@ class Searcher(object): # 等同于 class Searcher :  因为类接括号写法�
             self.lr = self.scheduler.get_lr()[0]   #获取当前学习率，并使用索引0从返回的列表中获取学习率的值
             #检查i_epoch是否是报告频率的倍数。
             print("<<<<<<<<<")
-            print(f"epoch = {i_epoch} , {self.args.visualize.report_freq}")
+            print(f"epoch = {i_epoch}")
+            # print(f"epoch = {i_epoch} , {self.args.visualize.report_freq}")
             if i_epoch % self.args.visualize.report_freq == 0:
                 # 获取当前基因型并生成基因型图表。
                 # todo report genotype   可能需要根据实际情况修改代码。

@@ -31,24 +31,6 @@ class Mixed(nn.Module):
         else:
             selected_op = self._ops[selected_idx]
             return self.candidates[selected_op](input)
- 
-
-
-# if __name__ == "__main__":
-#     mixed = Mixed()
-
-#     # 想办法在这里直接传入数据
-#     # 然后调试
-#     # output = mixed()
-#     #  output  = func((G, input_v, input_e), arch_para[weight_order], selected)
-#     # 
-
-
-
-
-
-
-
 
 # 单元格结构
 # 根据给定的单元格结构和输入，计算单元格的输出

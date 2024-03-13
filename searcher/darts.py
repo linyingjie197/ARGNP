@@ -30,6 +30,9 @@ class DARTS:
 
         lr = args_dict['lr']
 
+        #new here
+        epoch = args_dict['epoch']
+
         self.model_search.train()
         epoch_loss   = 0
         epoch_metric = 0
@@ -55,6 +58,8 @@ class DARTS:
                     target_valid      = batch_targets_search,
                     eta               = lr,
                     network_optimizer = self.optimizer,
+                     #new here
+                    epoch             = epoch,
                     unrolled          = self.args.optimizer.unrolled
                 )
                 #! 4. 优化模型参数
