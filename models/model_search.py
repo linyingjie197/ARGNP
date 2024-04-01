@@ -262,7 +262,7 @@ class Model_Search(nn.Module):
         return self.arch_para
             
 
-    # 属于某个类中的成员函数
+    # 属于某个类中的成员函数,预测损失值
     def _loss(self, input, targets):
         scores = self.forward(input)  # 计算输入数据 input 的预测分数
         return self.loss_fn(scores, targets)  # 计算预测分数 scores 和目标值 targets 之间的损失值

@@ -1,6 +1,7 @@
 import os
 from tensorboardX import SummaryWriter
 
+# 记录函数运行的结果
 class record_run:
     
     def __init__(self, comment = ''):

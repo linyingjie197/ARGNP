@@ -49,9 +49,9 @@ class Cell(nn.Module):
         setattr(self, f'module_dict_{type}', nn.ModuleDict(module_dict))
         setattr(self, f'link_dict_{type}', link_dict)
     
-
+    # 获取与Si相关的节点和边的索引,进行信息传播,，并将结果聚合到agg列表中。聚合的结果被添加到states_V和states_E列表中
     def forward(self, input):
-    
+        
         G, V0, V1, E0, E1 = input['G'], input['V0'], input['V1'], input['E0'], input['E1']
         states_V, states_E = [V0, V1], [E0, E1]
         for Si in range(2, self.nb_nodes + 2):

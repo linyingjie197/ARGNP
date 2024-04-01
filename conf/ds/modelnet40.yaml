@@ -6,14 +6,14 @@ nb_classes: 40
 # batch: 16
 # batch: 8
 batch: 4
-# node_dim: 128
-# edge_dim: 32
-node_dim: 55
-edge_dim: 25
+# node_dim: 128 128 / 4 = 32
+# edge_dim: 32 32 / 4 = 8
+node_dim: 32
+edge_dim: 8
 # inter_channel_V: 1024
 # inter_channel_E: 256
 inter_channel_V: 110
-inter_channel_E: 50
+inter_channel_E: 50 
 pos_encode: 0
 dropout: 0.6
 load_genotypes: './archs/expand/expand1.txt'

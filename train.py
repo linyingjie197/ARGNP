@@ -152,7 +152,6 @@ class Trainer(object):
     
 
     def scheduler_step(self, valid_loss):
-        # 看到这里了啊，恭喜你发现了彩蛋1
         if self.args.optimizer.name == 'SGD':
             self.scheduler.step()
             lr = self.scheduler.get_lr()[0]
@@ -175,29 +174,36 @@ class Trainer(object):
             #! 训练
             train_result = self.train(i_epoch, 'train')
             self.console.log(f"[green]=> train result [{i_epoch}] - loss: {train_result['loss']:.4f} - metric : {train_result['metric']:.4f}")
+            #! 验证
             with torch.no_grad():
                 if self.val_data is not None:
                     val_result   = self.infer(i_epoch, self.val_queue, 'val')
                     self.console.log(f"[yellow]=> valid result [{i_epoch}] - loss: {val_result['loss']:.4f} - metric : {val_result['metric']:.4f}")
+            #！测试
                 test_result  = self.infer(i_epoch, self.test_queue, 'test')
                 self.console.log(f"[underline][red]=> test  result [{i_epoch}] - loss: {test_result['loss']:.4f} - metric : {test_result['metric']:.4f}")
+                
                 self.max_metric = max(self.max_metric, test_result['metric'])
                 self.min_metric = min(self.min_metric, test_result['metric'])
                 self.console.log(f"max metric: {self.max_metric:.5f}, min metric: {self.min_metric:.5f}")
-
+            
+            # 在每个特定的训练周期（i_epoch）进行可视化。
                 if i_epoch % self.args.visualize.interval == 0:
                     self.plot(i_epoch, self.plot_queue)
+                
+            # 更新学习率
                 step_loss = val_result['loss'] if self.val_data is not None else test_result['loss']
-                self.lr = self.scheduler_step(step_loss)
+                self.lr = self.scheduler_step(step_loss)   # 根据模型在验证数据或测试数据上的性能来动态地调整学习率。
         
         self.console.log(f'=> Finished! Genotype = {self.args.ds.load_genotypes}')
     
 
-    # 你真棒！！！！
+    # 定义训练过程
     @record_run('train')
     def train(self, i_epoch, stage = 'train'):
 
-        self.model.train()
+        self.model.train() #训练模式，使能BN和dropout
+
         epoch_loss   = 0
         epoch_metric = 0
         desc         = '=> training'
@@ -226,11 +232,11 @@ class Trainer(object):
                 metric_avg = epoch_metric / (i_step + 1)
 
                 result = {'loss' : loss_avg, 'metric' : metric_avg}
-                t.set_postfix(lr = self.lr, **result)
+                t.set_postfix(lr = self.lr, **result)   # 用于在进度条后面添加或更新信息
                 
         return result
 
-
+    # 验证和测试过程
     @record_run('infer')
     def infer(self, i_epoch, dataloader, stage = 'infer'):
 

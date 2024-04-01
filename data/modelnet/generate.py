@@ -42,7 +42,7 @@ def load_data(partition, data_dir='data'):
     all_label = np.concatenate(all_label, axis=0)
     return all_data, all_label
 
-
+# 对输入的点云数据进行随机平移
 def translate_pointcloud(pointcloud):
     xyz1 = np.random.uniform(low=2./3., high=3./2., size=[3])
     xyz2 = np.random.uniform(low=-0.2, high=0.2, size=[3])

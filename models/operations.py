@@ -119,7 +119,8 @@ class GenMessage(nn.Module):
         # self.A           = MLP((self.args.ds.edge_dim, ) * (self.args.basic.nb_mlp_layer + 1), "leakyrelu", "batch")
         self.B           = nn.Linear(args.ds.edge_dim, args.ds.node_dim, bias = True)
         self.C           = nn.Linear(args.ds.edge_dim, args.ds.node_dim, bias = True)
-
+    
+    #   两层MLP（对应文中公式(1)）
     def forward(self, Vs, Vt, Ei):
         if self.args.basic.edge_feature:
             x     = self.A(Ei)                   # MLP处理其边信息,得到x
@@ -213,7 +214,7 @@ class V_Basic(nn.Module):
         self.act        = nn.LeakyReLU(negative_slope=0.2)
 
     def messages(self, edges):
-        M = self.message_fn(edges.src['V'], edges.dst['V'], edges.data['E'])
+        M = self.message_fn(edges.src['V'], edges.dst['V'], edges.data['E'])    # V(s) V(t) Ei(s,t)
         return {'M' : M}
 
     def forward(self, input):
@@ -340,13 +341,14 @@ class GenRelation(nn.Module):
     def __init__(self, args, in_channel):
         super().__init__()
         self.args        = args
-        channel_sequence = (in_channel, ) + (self.args.ds.edge_dim, ) * self.args.basic.nb_mlp_layer # 用于指定中间层的输入和输出通道数
-        self.A = MLP(channel_sequence)
+        channel_sequence = (in_channel, ) + (self.args.ds.edge_dim, ) * self.args.basic.nb_mlp_layer # 代表了神经网络的每一层的通道数，从输入层到最后一层
+        self.A = MLP(channel_sequence)  # 其输入和输出的维度由channel_sequence决定
         self.B = nn.Linear(args.ds.edge_dim, args.ds.edge_dim, bias = True)
         self.C = nn.Linear(args.ds.edge_dim, args.ds.edge_dim, bias = True)
 
+    # Film 机制（g函数固定为MLP）
     def forward(self, Ein, Et):
-        Et    = self.A(Et)                 # 使用 MLP 实例 A 对目标边特征 Et 进行处理，得到中间表示 Et。
+        Et    = self.A(Et)                 # 使用 MLP 对边的出度特征 Et 进行处理，得到中间表示 Et。
         scale = torch.sigmoid(self.B(Et))  # 对 Et 进行处理并经过 torch.sigmoid 函数，得到缩放因子 scale。
         shift = self.C(Et)                 # 对 Et 进行处理，得到平移向量 shift
         Eout  = scale * Ein + shift        # 将输入边特征 Ein 乘以缩放因子 scale，并加上平移向量 shift，得到输出边特征 Eout。

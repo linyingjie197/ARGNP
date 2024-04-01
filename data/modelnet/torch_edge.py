@@ -62,7 +62,7 @@ class Dilated2d(nn.Module):
 # 
 class DilatedKnn2d(nn.Module):
     """
-    Find the neighbors' indices based on dilated knn
+    Find the neighbors' indices based on dilated knn 基于扩张K近邻(dilated knn)找到邻居的索引
     """
     def __init__(self, k=9, dilation=1, self_loop=True, stochastic=False, epsilon=0.0):
         super(DilatedKnn2d, self).__init__()

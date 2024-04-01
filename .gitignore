@@ -2,9 +2,11 @@ archs/
 archs2/
 mol/
 mol10/
+mol40/
 *.pdf
 *.pkl
 *.out
+*.txt
 ModelNet10
 ModelNet10.zip
 .vscode
