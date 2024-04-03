@@ -262,7 +262,30 @@ class Model_Search(nn.Module):
         return self.arch_para
             
 
-    # 属于某个类中的成员函数,预测损失值
-    def _loss(self, input, targets):
-        scores = self.forward(input)  # 计算输入数据 input 的预测分数
-        return self.loss_fn(scores, targets)  # 计算预测分数 scores 和目标值 targets 之间的损失值
+    # # 属于某个类中的成员函数,预测损失值
+    # def _loss(self, input, targets):
+    #     scores = self.forward(input)  # 计算输入数据 input 的预测分数
+    #     return self.loss_fn(scores, targets)  # 计算预测分数 scores 和目标值 targets 之间的损失值
+    
+
+
+    #new here
+    def _loss(self, input, targets, entropy_reg=None):
+
+        def entropy(c):
+            result=-1
+            if(len(c)>0):
+                result=0
+            for x in c:
+                result = result + (-x)*(x+1e-9).log2()
+            return result
+    
+        scores = self.forward(input)
+        if entropy_reg is not None:
+            # arch_para = F.softmax(self.arch_para, dim=-1)
+            probs = [alpha for alpha in self.arch_para]
+            entropys = [entropy(p) for p in probs]
+            mean_entropy = sum(entropys) / len(entropys)
+            return self.loss_fn(scores, targets) + entropy_reg * mean_entropy
+        else:
+            return self.loss_fn(scores, targets)

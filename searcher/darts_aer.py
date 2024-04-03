@@ -6,10 +6,13 @@ from rich.console import Console
 from collections import namedtuple
 from models.operations import V_OPS, E_OPS, get_OPS
 from searcher.architect import Architect
+#new here
+import os, random, math
+
 Genotype = namedtuple('Genotype', 'V E')
 
 
-class DARTS:
+class DARTS_AER:
 
     def __init__(self, args_dict): 
         self.max_nb_edges  = 2     # 最多边为2条
@@ -32,12 +35,14 @@ class DARTS:
 
         #new here
         epoch = args_dict['epoch']
+        entropy_reg = args_dict['entropy_reg']
 
+        # 训练模式
         self.model_search.train()
         epoch_loss   = 0
         epoch_metric = 0
         device       = torch.device('cuda')
-        with tqdm(self.para_queue, desc = '=> searching by darts <=', leave = False) as t:
+        with tqdm(self.para_queue, desc = '=> searching by darts_aer <=', leave = False) as t:
             for i_step, (batch_graphs, batch_targets) in enumerate(t):
                 #! 1. 准备训练集数据
                 G = batch_graphs.to(device)
@@ -50,7 +55,7 @@ class DARTS:
                 VS = batch_graphs_search.ndata['feat'].to(device)
                 ES = batch_graphs_search.edata['feat'].to(device)
                 batch_targets_search = batch_targets_search.to(device)
-                #! 3. 优化结构参数 alpha
+                #! 3. 优化结构参数
                 self.architect.step(
                     input_train       = {'G': G, 'V': V, 'E': E, 'arch_topo': self.arch_topo},
                     target_train      = batch_targets,
@@ -58,15 +63,18 @@ class DARTS:
                     target_valid      = batch_targets_search,
                     eta               = lr,
                     network_optimizer = self.optimizer,
+                    
                      #new here
                     epoch             = epoch,
-                    entropy_reg       = None,
+                    entropy_reg       = entropy_reg,
+
                     unrolled          = self.args.optimizer.unrolled
                 )
-                #! 4. 优化模型参数 w
+                #! 4. 优化模型参数
                 self.optimizer.zero_grad()
                 batch_scores  = self.model_search({'G': G, 'V': V, 'E': E, 'arch_topo': self.arch_topo})
                 loss          = self.loss_fn(batch_scores, batch_targets)
+
                 loss.backward()
                 self.optimizer.step()
 
@@ -81,6 +89,8 @@ class DARTS:
 
 
     def genotypes(self, show = True):
+
+        
         genotypes = []
         arch_para = self.model_search.arch_parameters()
         arch_topo = self.model_search.arch_topo
@@ -129,3 +139,4 @@ class DARTS:
 
         return genotypes
 
+  

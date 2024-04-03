@@ -1,8 +1,6 @@
 archs/
 archs2/
-mol/
-mol10/
-mol40/
+mol*/
 *.pdf
 *.pkl
 *.out

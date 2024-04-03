@@ -12,6 +12,10 @@ from models.model_search import *
 from utils.utils import *
 from searcher.darts import DARTS
 from searcher.sgas import SGAS
+#new here
+from searcher.darts_aer import DARTS_AER
+from searcher.sgas_aer import SGAS_AER
+
 # from architect.architect import Architect
 from utils.plot_genotype import plot_genotypes
 from utils.visualize import *
@@ -26,6 +30,8 @@ from rich.panel import Panel
 from rich.syntax import Syntax
 from omegaconf import DictConfig, OmegaConf
 from pathlib import Path
+
+import logging
 
 class Searcher(object): # 等同于 class Searcher :  因为类接括号写法代表继承  所有类都继承于object 所以写了跟不写一样    空了你得看看python的多态等等昂
     def __init__(self, args):
@@ -85,7 +91,13 @@ class Searcher(object): # 等同于 class Searcher :  因为类接括号写法�
         if args.optimizer.search_mode == 'darts':
             SEARCHER = DARTS
         elif args.optimizer.search_mode == 'sgas':
-            SEARCHER = SGAS
+            SEARCHER = SGAS        
+        #new here
+        elif args.optimizer.search_mode == 'darts_aer':
+            SEARCHER = DARTS_AER
+        elif args.optimizer.search_mode == 'sgas_aer':
+            SEARCHER = SGAS_AER
+    
         else:
             raise Exception("Unknown Search Mode!") # 如果没有对应策略，抛出异常
 
@@ -164,11 +176,15 @@ class Searcher(object): # 等同于 class Searcher :  因为类接括号写法�
         self.console.log(f'=> [4] Search & Train')
         for i_epoch in range(self.args.basic.search_epochs):   #训练循环将在每个epoch中运行
             self.scheduler.step()   #更新学习率
-            self.lr = self.scheduler.get_lr()[0]   #获取当前学习率，并使用索引0从返回的列表中获取学习率的值
-            #检查i_epoch是否是报告频率的倍数。
+            self.lr = self.scheduler.get_lr()[0]   #获取当前学习率，并使用索引0从返回的列表中获取学习率的值。
+            
+            #new here
+            entropy_reg = 0.2 + (-0.2 - 0.2) * (1 + math.cos(math.pi * i_epoch / self.args.basic.search_epochs)) / 2
+
             print("<<<<<<<<<")
             print(f"epoch = {i_epoch}")
             # print(f"epoch = {i_epoch} , {self.args.visualize.report_freq}")
+            #检查i_epoch是否是报告频率的倍数
             if i_epoch % self.args.visualize.report_freq == 0:
                 # 获取当前基因型并生成基因型图表。
                 # todo report genotype   可能需要根据实际情况修改代码。
@@ -179,7 +195,9 @@ class Searcher(object): # 等同于 class Searcher :  因为类接括号写法�
                 print("----")
 
             #调用了searcher对象的search方法，并传入一个字典作为参数。search方法将使···用这些参数执行搜索操作
-            search_result = self.searcher.search({"lr": self.lr, "epoch": i_epoch})   
+            # search_result = self.searcher.search({"lr": self.lr, "epoch": i_epoch})  
+            search_result = self.searcher.search({"lr": self.lr, "epoch": i_epoch,"entropy_reg":entropy_reg})
+            logging.info('entropy_reg: %e', entropy_reg)
             #在控制台上查看每个训练轮次的搜索结果的损失值和指标值。
             self.console.log(f"[green]=> [{i_epoch}] search result - loss: {search_result['loss']:.4f} - metric : {search_result['metric']:.4f}")
             

@@ -9,6 +9,11 @@ from models.operations import V_OPS, E_OPS, get_OPS
 from searcher.architect import Architect
 from rich.console import Console
 
+#new here
+import os, random, math
+
+
+
 Genotype = namedtuple('Genotype', 'V E')
 
 def normalize(v):
@@ -22,7 +27,7 @@ def normalize(v):
     return normalized_v
 
 # SGAS 类用于使用 SGAS 算法执行搜索过程。 它接受多个参数，包括要搜索的模型、架构队列、参数队列、损失函数、度量函数和优化器。
-class SGAS: 
+class SGAS_AER: 
 
     def __init__(self, args_dict): 
         self.max_nb_edges = 2  # 每条边只保留两个最可能的操作
@@ -33,7 +38,7 @@ class SGAS:
         self.loss_fn      = args_dict['loss_fn']
         self.metric       = args_dict['metric']
         self.optimizer    = args_dict['optimizer']
-        self.architect    = Architect(self.model_search, self.args)   # ？
+        self.architect    = Architect(self.model_search, self.args)   
         # self.init_sgas_paras()
         self.console   = Console()
         self.cell_id   = 0
@@ -47,12 +52,17 @@ class SGAS:
         
         #new here
         epoch = args_dict['epoch']
-        
+        entropy_reg = args_dict['entropy_reg']
+        # entropy_reg       = 0.2 + (-0.2 - 0.2) * (1 + math.cos(math.pi * epoch / 50)) / 2
+        # entropy_reg = 0.2 + (-0.2 - 0.2) * (1 + math.cos(math.pi * epoch / config.epochs)) / 2
+
+
+
         self.model_search.train()
         epoch_loss   = 0
         epoch_metric = 0
         device       = torch.device('cuda')
-        with tqdm(self.para_queue, desc = '=> searching by sgas <=', leave = False) as t:
+        with tqdm(self.para_queue, desc = '=> searching by sgas_aer <=', leave = False) as t:
             for i_step, (batch_graphs, batch_targets) in enumerate(t):
                 #! 1. 准备训练集数据
                 G = batch_graphs.to(device)
@@ -73,9 +83,10 @@ class SGAS:
                     target_valid      = batch_targets_search,
                     eta               = lr,
                     network_optimizer = self.optimizer,
+                    
                     #new here
                     epoch             = epoch,
-                    entropy_reg       = None,
+                    entropy_reg       = entropy_reg,
                     
                     unrolled          = self.args.optimizer.unrolled
 
