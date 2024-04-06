@@ -82,9 +82,10 @@ class Architect(object):
         #here new
         weights = 0 + 50*epoch/100
         # print(f"打印model的内部方法：{dir(self.model.arch_parameters)}")
-        ssr_normal = self.mlc_loss(self.model.arch_parameters())
+        # ssr_normal = self.mlc_loss(self.model.arch_parameters())
         #new here
-        loss = self.model._loss(input_valid, target_valid, entropy_reg=entropy_reg) + weights*ssr_normal
+        loss = self.model._loss(input_valid, target_valid, entropy_reg=entropy_reg) 
+        # loss = self.model._loss(input_valid, target_valid, entropy_reg=entropy_reg) + weights*ssr_normal
         # loss = self.model._loss(input_valid, target_valid) + weights*ssr_normal
         # loss = self.model._loss(input_valid, target_valid)
         loss.backward()

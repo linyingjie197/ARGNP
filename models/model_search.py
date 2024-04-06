@@ -281,11 +281,25 @@ class Model_Search(nn.Module):
             return result
     
         scores = self.forward(input)
+        
         if entropy_reg is not None:
-            # arch_para = F.softmax(self.arch_para, dim=-1)
-            probs = [alpha for alpha in self.arch_para]
+            # 1. 长度统一
+            max_length = max(t.size(0) for t in self.arch_para)
+            padded_tensors = [F.pad(t, (0, max_length - t.size(0))) for t in self.arch_para]
+            # 2. 拼接张量
+            y_pred_neg = torch.stack(padded_tensors)
+            arch_para = F.softmax(y_pred_neg, dim=-1)    
+            probs = [alpha for alpha in arch_para]
             entropys = [entropy(p) for p in probs]
-            mean_entropy = sum(entropys) / len(entropys)
-            return self.loss_fn(scores, targets) + entropy_reg * mean_entropy
+            tmp1 = sum(entropys)
+            # print('sum_entropys', tmp1)
+            mean_entropy = tmp1 / len(entropys)
+            # mean_entropy = sum(entropys) / len(entropys)
+            origin_loss = self.loss_fn(scores, targets)
+            # print('mean_entropy', mean_entropy)
+            # print('origin_loss', origin_loss)
+            # return self.loss_fn(scores, targets) + entropy_reg * mean_entropy
+            return origin_loss +  entropy_reg * mean_entropy
         else:
             return self.loss_fn(scores, targets)
+        

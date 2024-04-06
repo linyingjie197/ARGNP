@@ -4,8 +4,8 @@ lr_min: 0.001
 momentum: 0.9
 weight_decay: 3e-4
 
-# unrolled: False
-unrolled: True
+unrolled: False
+# unrolled: True
 
 # search_mode: sgas
 # search_mode: darts
