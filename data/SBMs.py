@@ -20,10 +20,15 @@ class load_SBMsDataSetDGL(torch.utils.data.Dataset):
                  split):
 
         self.split = split
+        self.name = name
         self.is_test = split.lower() in ['test', 'val'] 
-        path = os.path.join(get_original_cwd(), data_dir, name + '_%s.pkl' % self.split)
+        
+        # path = data_dir, name + '_%s.pkl' % self.split
+        path = os.path.join(os.getcwd(), data_dir, name + '_%s.pkl' % self.split)
+        print(path)
         with open(path, 'rb') as f:
             self.dataset = pickle.load(f)
+
         self.node_labels = []
         self.graph_lists = []
         self.n_samples = len(self.dataset)
@@ -85,7 +90,8 @@ class SBMsDatasetDGL(torch.utils.data.Dataset):
         start = time.time()
         print("[I] Loading data ...")
         self.name = name
-        data_dir = 'data/SBMs'
+        data_dir='/media/ps/1C36E3BC36E394D4/lin/ARGNP2/data/SBMs'
+        # data_dir = 'data/SBMs'
         self.train = load_SBMsDataSetDGL(data_dir, name, split='train')
         self.test = load_SBMsDataSetDGL(data_dir, name, split='test')
         self.val = load_SBMsDataSetDGL(data_dir, name, split='val')
@@ -161,8 +167,9 @@ class SBMsDataset(torch.utils.data.Dataset):
         start = time.time()
         print("[I] Loading dataset %s..." % (name))
         self.name = name
+        
         data_dir = 'data/SBMs/'
-        path = os.path.join(get_original_cwd(), data_dir+name+'.pkl')
+        path = os.path.join(os.getcwd(), data_dir+name+'.pkl')
         with open(path, "rb") as f:
             f = pickle.load(f)
             self.train = f[0]

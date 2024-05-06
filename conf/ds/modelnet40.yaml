@@ -5,7 +5,7 @@ in_dim_E: 9
 nb_classes: 40
 # batch: 16
 # batch: 8
-batch: 4
+batch: 32
 # node_dim: 128 128 / 4 = 32
 # edge_dim: 32 32 / 4 = 8
 node_dim: 32

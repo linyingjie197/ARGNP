@@ -6,6 +6,7 @@ import numpy as np
 from models.networks import MLP
 from utils.visualize import *
 
+
 from torch.nn import Sequential as Seq, Linear as Lin, Conv2d
 
 #定义候选操作
@@ -37,7 +38,7 @@ OPS = {
 
 #划分两个搜索空间中的候选操作
 V_OPS = ['V_None', 'V_I', 'V_Mean', 'V_Sum', 'V_Max', 'V_Std', 'V_Gem2', 'V_Gem3']
-# E_OPS = ['E_None', 'E_I', 'E_Sub', 'E_Gauss', 'E_Max', 'E_Sum', 'E_Mean', 'E_Had','E_Cat','E_GRU' ,'E_FiLM','E_NEW']
+# E_OPS = ['E_GRU' ,'E_FiLM','E_NEW']
 # E_OPS = ['E_None', 'E_I', 'E_Sub', 'E_Gauss', 'E_Max', 'E_Sum', 'E_Mean', 'E_Had','E_Cat']
 E_OPS = ['E_None', 'E_I', 'E_Sub', 'E_Gauss', 'E_Max', 'E_Sum', 'E_Mean', 'E_Had']
 
@@ -109,7 +110,6 @@ def get_package(type):
     else:
         raise Exception('Unknown operation type!')
 
-
 class GenMessage(nn.Module):
 
     def __init__(self, args):
@@ -175,12 +175,22 @@ class NodePooling(nn.Module):
         self.A   = nn.Linear(args.ds.node_dim, args.ds.node_dim)
         self.B   = nn.Linear(args.ds.node_dim, args.ds.node_dim)
         self.act = nn.LeakyReLU(negative_slope=0.2)
+        
+        #new here
+        self.C   = nn.AdaptiveAvgPool1d(args.ds.node_dim)
 
     def forward(self, V):
+        # NEW HERE
+        V = self.C(V.unsqueeze(1)).squeeze(1)
         V = self.A(V)
         V = self.act(V)
         V = self.B(V)
         return V
+
+        # V = self.A(V)
+        # V = self.act(V)
+        # V = self.B(V)
+        # return V
 
 
 class V_None(nn.Module):
@@ -248,7 +258,7 @@ class V_Min(V_Basic):
     def __init__(self, args):
         super().__init__(args, fn.min)
 
-# 为输入特征集的标准差，它捕获了相邻消息的稳定性
+# new here
 class V_Std(nn.Module):
 
     def __init__(self, args):
@@ -259,7 +269,7 @@ class V_Std(nn.Module):
 
     def messages(self, edges):
         M1 = self.message_fn(edges.src['V'], edges.dst['V'], edges.data['E'])
-        M2 = M1 * M1                      #
+        M2 = M1 * M1                      
         return {'M1': M1, 'M2': M2}
     
     # 用于为边上的消息传递过程提供占位符
@@ -278,6 +288,37 @@ class V_Std(nn.Module):
         G.update_all(self.placeholder1, fn.mean('M', 'V1'))
         G.update_all(self.placeholder2, fn.mean('M', 'V2'))
         return torch.sqrt(torch.relu(G.ndata['V2'] - G.ndata['V1']) + 1e-5)         # 计算标准差，即对最大值和最小值之间的差值进行开方操作，并加上一个很小的常数 1e-5，以避免除以零的情况。
+
+# 为输入特征集的标准差，它捕获了相邻消息的稳定性
+# class V_Std(nn.Module):
+
+#     def __init__(self, args):
+#         super().__init__()
+#         self.pooling = NodePooling(args)
+#         self.message_fn = GenMessage(args)
+#         self.act        = nn.LeakyReLU(negative_slope=0.2)
+
+#     def messages(self, edges):
+#         M1 = self.message_fn(edges.src['V'], edges.dst['V'], edges.data['E'])
+#         M2 = M1 * M1                      #
+#         return {'M1': M1, 'M2': M2}
+    
+#     # 用于为边上的消息传递过程提供占位符
+#     def placeholder1(self, edges):
+#         return {'M': edges.data['M1']}
+
+#     def placeholder2(self, edges):
+#         return {'M': edges.data['M2']}
+
+#     def forward(self, input):
+#         G, V, E = input
+#         V = self.act(V)
+#         G.ndata['V'] = self.pooling(V)
+#         G.edata['E'] = E
+#         G.apply_edges(self.messages)
+#         G.update_all(self.placeholder1, fn.mean('M', 'V1'))
+#         G.update_all(self.placeholder2, fn.mean('M', 'V2'))
+#         return torch.sqrt(torch.relu(G.ndata['V2'] - G.ndata['V1']) + 1e-5)         # 计算标准差，即对最大值和最小值之间的差值进行开方操作，并加上一个很小的常数 1e-5，以避免除以零的情况。
 
 # 用于聚合消息的广义平均池，它可以专注于学习传播突出的消息
 class V_Gem(nn.Module):
@@ -574,7 +615,8 @@ class E_Cat(nn.Module):
 #         G.edata['E'] = E
 #         G.apply_edges(self.trans_edges)
 #         return G.edata['E']
-    
+
+
 
 
 

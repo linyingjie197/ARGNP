@@ -17,12 +17,17 @@ from utils.record_utils import record_run
 import hydra
 from hydra.utils import get_original_cwd, to_absolute_path
 import warnings
+
+
 warnings.filterwarnings('ignore')
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich.syntax import Syntax
 from omegaconf import DictConfig, OmegaConf
+
+# new here
+from lion_pytorch import Lion
 
 
 class Trainer(object):
@@ -86,6 +91,21 @@ class Trainer(object):
                 params       = self.model.parameters(),
                 lr           = args.optimizer.lr,
                 weight_decay = args.optimizer.weight_decay,
+            )
+
+            self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer = self.optimizer,
+                mode      = 'min',
+                factor    = 0.5,
+                patience  = args.optimizer.patience,
+                verbose   = True
+            )
+        
+        #new here
+        elif args.optimizer.name == 'LION':
+            self.optimizer   = Lion(
+                params       = self.model.parameters(),
+                lr           = args.optimizer.lr,
             )
 
             self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -160,6 +180,10 @@ class Trainer(object):
             lr = self.optimizer.param_groups[0]['lr']
             if lr < 1e-5:
                 self.console.log('=> !! learning rate is smaller than threshold !!')
+        elif self.args.optimizer.name == 'LION':
+            self.scheduler.step(valid_loss)
+            lr = self.optimizer.param_groups[0]['lr']
+
         return lr
 
 

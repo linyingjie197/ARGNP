@@ -5,6 +5,9 @@ mol*/
 *.pkl
 *.out
 *.txt
+*.log
+ZINC*
+CIFAR10*
 ModelNet10
 ModelNet10.zip
 .vscode

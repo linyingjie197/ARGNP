@@ -8,9 +8,10 @@ import numpy as np
 import csv
 
 import dgl
-
+import hydra
 from scipy import sparse as sp
 from hydra.utils import get_original_cwd, to_absolute_path
+from hydra.experimental import initialize_config_dir
 import numpy as np
 
 # *NOTE
@@ -25,13 +26,22 @@ class MoleculeDGL(torch.utils.data.Dataset):
         self.split = split
         self.num_graphs = num_graphs
 
-        path = os.path.join(get_original_cwd(), data_dir + "/%s.pickle" % self.split)
+
+        # get_original_cwd 官网说有bug，让自己实现下，我自己改了下路径，不需要也行
+
+        # path = os.path.join(get_original_cwd(), data_dir + "/%s.pickle" % self.split)
+        path =  data_dir + "/%s.pickle" % self.split
+
         with open(path,"rb") as f:
             self.data = pickle.load(f)
 
         if self.num_graphs in [10000, 1000]:
             # loading the sampled indices from file ./zinc_molecules/<split>.index
-            path = os.path.join(get_original_cwd(), data_dir + "/%s.index" % self.split)
+            # *NOTE
+            # path = os.path.join(get_original_cwd(), data_dir + "/%s.index" % self.split)
+
+            path = data_dir + "/%s.index" % self.split
+
             with open(path, "r") as f:
                 data_idx = [list(map(int, idx)) for idx in csv.reader(f)]
                 self.data = [ self.data[i] for i in data_idx[0] ]
@@ -96,7 +106,7 @@ class MoleculeDGL(torch.utils.data.Dataset):
         """
         return self.graph_lists[idx], self.graph_labels[idx]
     
-    
+# @hydra.main(config_path='conf')
 class MoleculeDatasetDGL(torch.utils.data.Dataset):
     def __init__(self, name='Zinc'):
         t0 = time.time()
@@ -104,10 +114,12 @@ class MoleculeDatasetDGL(torch.utils.data.Dataset):
         
         self.num_atom_type = 28 # known meta-info about the zinc dataset; can be calculated as well
         self.num_bond_type = 4 # known meta-info about the zinc dataset; can be calculated as well
-        
-        data_dir='./data/molecules'
+        # initialize_config_dir(config_dir='/home/ps/mylin/ARGNP2/conf')
+        # data_dir='./data/molecules'
+        data_dir='/media/ps/1C36E3BC36E394D4/lin/ARGNP2/data/molecules'
         if self.name == 'ZINC-full':
-            data_dir='./data/molecules/zinc_full'
+            # data_dir='./data/molecules/zinc_full'
+            data_dir='/media/ps/1C36E3BC36E394D4/lin/ARGNP2/data/molecules/zinc_full'
             self.train = MoleculeDGL(data_dir, 'train', num_graphs=220011)
             self.val = MoleculeDGL(data_dir, 'val', num_graphs=24445)
             self.test = MoleculeDGL(data_dir, 'test', num_graphs=5000)
@@ -206,9 +218,12 @@ class MoleculeDataset(torch.utils.data.Dataset):
             Loading Molecules datasets
         """
         start = time.time()
+        # 这部分就是加载二维数据集的地方
         print("[I] Loading dataset %s..." % (name))
         self.name = name
+        # 数据集目录
         data_dir = 'data/molecules/'
+        # 传入的二维数据集名字 name 这里name就是ZINC了
         path = os.path.join(get_original_cwd(), data_dir+name+'.pkl')
         with open(path,"rb") as f:
             f = pickle.load(f)
@@ -312,4 +327,5 @@ class MoleculeDataset(torch.utils.data.Dataset):
         self.train.graph_lists = [positional_encoding(g, pos_enc_dim) for g in self.train.graph_lists]
         self.val.graph_lists = [positional_encoding(g, pos_enc_dim) for g in self.val.graph_lists]
         self.test.graph_lists = [positional_encoding(g, pos_enc_dim) for g in self.test.graph_lists]
+
 

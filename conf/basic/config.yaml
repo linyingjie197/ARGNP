@@ -1,5 +1,6 @@
 batchnorm_op: True
 edge_feature: True
+# edge_feature: FALSE
 nb_mlp_layer: 2
 
 data_clip: 1.0

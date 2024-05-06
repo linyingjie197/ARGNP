@@ -30,7 +30,7 @@ from rich.panel import Panel
 from rich.syntax import Syntax
 from omegaconf import DictConfig, OmegaConf
 from pathlib import Path
-
+from lion_pytorch import Lion
 import logging
 
 class Searcher(object): # 等同于 class Searcher :  因为类接括号写法代表继承  所有类都继承于object 所以写了跟不写一样    空了你得看看python的多态等等昂
@@ -69,15 +69,30 @@ class Searcher(object): # 等同于 class Searcher :  因为类接括号写法�
         self.load_dataloader()       #加载数据加载器。将数据集转换为数据加载器，方便数据的批量加载和训练
        
 
-        #初始化优化器
+        #初始化优化器  网络参数优化器Lion
         self.console.log(f'=> [4] Initial optimizer')
         #创建了一个SGD优化器的实例，并将其赋值给 self.optimizer 变量。
-        self.optimizer   = torch.optim.SGD(              
-            params       = self.model.parameters(),   #params 参数指定了需要进行优化的参数集合
-            lr           = args.optimizer.lr,         #lr 参数指定了学习率（learning rate），这是 SGD 算法的一个重要超参数，用于控制参数更新的步长。
-            momentum     = args.optimizer.momentum,   #momentum 参数指定了动量（momentum），这是 SGD 算法的一个调整项，用于加速梯度下降的过程。
-            weight_decay = args.optimizer.weight_decay #weight_decay 参数指定了权重衰减，也称为 L2 正则化，用于控制模型的复杂度，防止过拟合。
-        )      
+
+        print(f'optimizer: {args.optimizer.name}')
+        if args.optimizer.name == 'Lion':
+            self.optimizer = Lion(
+                params=self.model.parameters(),
+                lr=args.optimizer.lr,
+                weight_decay=args.optimizer.weight_decay,
+                use_triton=False,
+            )
+        
+        elif args.optimizer.name == 'SGD':
+            self.optimizer   = torch.optim.SGD(              
+                params       = self.model.parameters(),   #params 参数指定了需要进行优化的参数集合
+                lr           = args.optimizer.lr,         #lr 参数指定了学习率（learning rate），这是 SGD 算法的一个重要超参数，用于控制参数更新的步长。
+                momentum     = args.optimizer.momentum,   #momentum 参数指定了动量（momentum），这是 SGD 算法的一个调整项，用于加速梯度下降的过程。
+                weight_decay = args.optimizer.weight_decay #weight_decay 参数指定了权重衰减，也称为 L2 正则化，用于控制模型的复杂度，防止过拟合。
+            )      
+
+
+
+
 
         #设置学习率调度器，可以自动地在训练过程中动态地调整学习率，采用的是余弦退火调度器（避免模型陷入局部最优点）
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR( 
@@ -110,7 +125,7 @@ class Searcher(object): # 等同于 class Searcher :  因为类接括号写法�
             "para_queue": self.para_queue,    #存储参数的队列对象
             "loss_fn": self.loss_fn,          #损失函数对象
             "metric": self.metric,            #度量指标对象
-            "optimizer": self.optimizer,      #优化器对象
+            "optimizer": self.optimizer,      #优化器对象  架构参数优化器ADAM
         }) 
 
 

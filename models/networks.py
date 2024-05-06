@@ -82,3 +82,4 @@ class MLP(nn.Module):
 #                 m.append(act_layer(act))
 
 #         super(MLP, self).__init__(*m)
+
