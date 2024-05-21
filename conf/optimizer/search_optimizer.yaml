@@ -1,20 +1,17 @@
+#name: SGD
 name: Lion
 lr: 0.025
 lr_min: 0.001
 momentum: 0.9
 weight_decay: 3e-4
 
-#weight_decay: 1e-2
-use_triton: True
-
 unrolled: False
 # unrolled: True
 
-search_mode: sgas
+#search_mode: sgas
 # search_mode: darts
 # search_mode: darts_aer
-# search_mode: sgas_aer
-
+search_mode: sgas_aer
 
 arch_lr: 3e-4
 arch_weight_decay: 1e-3
